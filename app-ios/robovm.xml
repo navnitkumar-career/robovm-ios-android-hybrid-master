@@ -1,0 +1,25 @@
+<config>
+    <resources>
+        <resource>
+            <directory>./nibs</directory>
+            <includes>
+                <include>**</include>
+            </includes>
+            <skipPngCrush>true</skipPngCrush>
+        </resource>
+    </resources>
+
+    <forceLinkClasses>
+        <!-- for http: support use -->
+        <pattern>com.android.okhttp.HttpHandler</pattern>
+        <!-- for https: support use -->
+        <pattern>com.android.okhttp.HttpsHandler</pattern>
+
+        <pattern>com.android.org.conscrypt.OpenSSLProvider</pattern>
+        <pattern>org.apache.harmony.security.provider.cert.DRLCertFactory</pattern>
+        <pattern>com.android.org.bouncycastle.jce.provider.BouncyCastleProvider</pattern>
+        <pattern>org.apache.harmony.security.provider.crypto.CryptoProvider</pattern>
+        <pattern>com.android.org.conscrypt.JSSEProvider</pattern>
+    </forceLinkClasses>
+
+</config>

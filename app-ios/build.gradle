@@ -1,0 +1,86 @@
+// Pull the plugin from Maven Central
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    }
+    dependencies {
+        classpath 'com.github.jtakakura:gradle-robovm-plugin:0.0.11-SNAPSHOT'
+    }
+}
+
+// Apply the plugin
+apply plugin: 'java'
+apply plugin: 'robovm'
+
+repositories {
+    mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+ext {
+    // Configure your application main class
+    mainClassName = "se.tap2.testrobovm.MyIpResolverApplication"
+    roboVMVersion = "0.0.14"
+}
+
+def xibPath = null;
+// Uncomment these two lines to automatically build nib files from interface builder
+//def xibPath = 'xcode-ui/app-ios-ui/app-ios-ui/';
+//def iosSdk = '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator7.1.sdk/';
+
+dependencies {
+    compile "org.robovm:robovm-rt:${roboVMVersion}"
+    compile "org.robovm:robovm-cocoatouch:${roboVMVersion}"
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'com.google.guava:guava:16.0.1'
+    compile project(':common')
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+robovm {
+    // Configure robovm
+//    iosSignIdentity = ""
+//    iosProvisioningProfile = ""
+//    iosSkipSigning = false
+//    stdoutFifo = ""
+//    stderrFifo = ""
+}
+
+private int ibtool(args) {
+
+    def processBuilder = new ProcessBuilder(*(['ibtool'] + args))
+    def process = processBuilder.directory(project.projectDir).redirectErrorStream(true).start()
+
+    // Print stdout and stderr from process
+    process.inputStream.eachLine {
+        println it
+    }
+
+    return process.exitValue()
+}
+
+task compileXibs {
+
+    if(xibPath == null) {
+        return;
+    }
+
+    description "Run litool to build .xib files to .nib files"
+
+    doLast {
+    def xibs = file(xibPath).listFiles().findAll {it.name.endsWith('.xib')};
+
+        xibs.each {
+            def nibName = it.name.split(".xib")[0];
+            def result = ibtool(["--errors", "--warnings", "--notices", "--output-format", "human-readable-text", "--compile", "nibs/${nibName}.nib", it.absolutePath, "--sdk", iosSdk])
+
+            if (result != 0) {
+                throw new Exception("ibtool returned status code $result")
+            }
+        }
+
+    }
+}
+
+assemble.dependsOn([compileXibs])
