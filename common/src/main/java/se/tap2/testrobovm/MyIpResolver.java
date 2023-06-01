@@ -2,6 +2,7 @@ package se.tap2.testrobovm;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
+import io.github.pixee.security.BoundedLineReader;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class MyIpResolver {
 
         String line = null;
         try {
-            while ((line = reader.readLine()) != null) {
+            while ((line = BoundedLineReader.readLine(reader, 1000000)) != null) {
                 sb.append(line + "\n");
             }
         } catch (IOException e) {
